@@ -1,0 +1,268 @@
+﻿@{
+    ViewData["Title"] = "Main";
+}
+
+<div>
+    <img style="width: 200px;" src="~/images/signature.png" />
+    <h1 class="display-4">Hexabitz Web Relay Hub Application</h1>
+    <p>This is demo represent how to use the DOT-NET-COMS-LIB in ASP.NET core and how to connect to Relay modules and interact with them.</p>
+</div>
+
+
+<!-- Connection Options -->
+<div class="box box-info">
+    <div class="box-header with-border">
+        <h3 class="box-title">Connection Options</h3>
+        <div class="box-tools pull-right">
+        </div>
+    </div>
+    <div class="box-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>COM</label>
+                        <select id="COMSelect" name="COMSelect" class="form-control select2" style="width: 100%;">
+                            <option>1</option>
+                            <option>2</option>
+                            <option selected="selected">3</option>
+                            <option>4</option>
+                            <option >5</option>
+                            <option>6</option>
+                            <option>7</option>
+                            <option>8</option>
+                            <option>9</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Baud Rate</label>
+                        <select id="BaudRateSelect" name="BaudRateSelect" class="form-control select2" style="width: 100%;">
+                            <option>1200</option>
+                            <option>2400</option>
+                            <option>4800</option>
+                            <option>9600</option>
+                            <option>19200</option>
+                            <option>38400</option>
+                            <option>57600</option>
+                            <option>115200</option>
+                            <option>230400</option>
+                            <option>460800</option>
+                            <option selected="selected">921600</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Source</label>
+                        <select id="SourceID" name="SourceID" class="form-control select2" style="width: 100%;">
+                            <option >0</option>
+                            <option selected="selected">1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                            <option>6</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Destination</label>
+                        <select id="DestinationID" name="DestinationID" class="form-control select2" style="width: 100%;">
+                            <option >1</option>
+                            <option selected="selected">2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                            <option>6</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn-md" onclick="Connect()">Connect</button>
+        <button class="btn-md" onclick="Disconnect()">Disconnect</button>
+
+
+        <h4> Connection Status: <span id="connectionStatus">Disconnected</span></h4>
+        <h4> Selected COM: <span id="COM">##</span></h4>
+        <h4> Selected Baud Rate: <span id="BaudRate">######</span></h4>
+
+    </div>
+</div>
+
+<div class="row">
+    @*Left column*@
+    <div class="col-md-6">
+
+        <!-- Relays -->
+        <div class="box box-info">
+            <div class="box-header">
+                <h3 class="box-title">Relays Control</h3>
+            </div>
+            <div class="box-body">
+
+                <div class="form-group">
+                    <label>Relays count</label>
+                    <select id="relayCount" name="relayCount" class="form-control select2" style="width: 100%;" onchange="CountChange()">
+                        <option selected="selected">1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                    </select>
+                </div>
+
+
+                <div id ="relaysGroup" class="form-group">
+                    <label>
+                        <input id="relay2" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(2);">
+                        Relay 2
+                    </label>
+                    <label>
+                        <input id="relay3" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(3);">
+                        Relay 3
+                    </label>
+                    <label>
+                        <input id="relay4" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(4);">
+                        Relay 4
+                    </label>
+                    <label>
+                        <input id="relay5" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(5);">
+                        Relay 5
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    //Logic control
+
+    // connection options
+    var COMSelect = document.getElementById("COMSelect");
+    var BaudRateSelect = document.getElementById("BaudRateSelect");
+    var SourceID = document.getElementById("SourceID");
+    var DestinationID = document.getElementById("DestinationID");
+    var ConnectionStatus = document.getElementById("connectionStatus");
+
+
+    // Relays controls
+    var relay2 = document.getElementById('relay2');
+    var relay3 = document.getElementById('relay3');
+    var relay4 = document.getElementById('relay4');
+    var relay5 = document.getElementById('relay5');
+
+
+
+    // Variables
+
+    function Connect() {
+        $.ajax({
+            url: '@Url.Action("Connect")',
+            type: "POST",
+            dataType: "json",
+            data: {
+                'COM': COMSelect.value,
+                'BaudRate': BaudRateSelect.value,
+            },
+            success: function (response) {
+                ConnectionStatus.innerHTML = "Connected";
+                document.getElementById('COM').innerHTML = response.com;
+                document.getElementById('BaudRate').innerHTML = response.baudRate;
+            },
+        });
+    }
+
+    function Disconnect() {
+        $.ajax({
+            url: '@Url.Action("Disconnect")',
+            type: "POST",
+            dataType: "json",
+        });
+        ConnectionStatus.innerHTML = "Disconnected";
+        document.getElementById('COM').innerHTML = "Disconnected";
+        document.getElementById('BaudRate').innerHTML = "Disconnected";
+    }
+
+    function SendData(DestinationID) {
+        //debugger;
+        relayValues = [relay2.value,
+        relay3.value,
+        relay4.value,
+        relay5.value,
+        ];
+
+        $.ajax({
+            url: '@Url.Action("SendData")',
+            type: "POST",
+            dataType: "json",
+            data: {
+                'SourceID': SourceID.value,
+                'DestinationID': DestinationID,
+                'relayValues': relayValues,
+            },
+            success: function (response) {
+                ConnectionStatus.innerHTML = "Connected";
+                document.getElementById('COM').innerHTML = response.com;
+                document.getElementById('BaudRate').innerHTML = response.baudRate;
+            },
+        });
+
+    }
+
+    function CountChange() {
+        var relayCount = document.getElementById('relayCount').value;
+        var relaysGroup = document.getElementById('relaysGroup');
+        relaysGroup.innerHTML = "";
+
+        for (var i = 2; i <= relayCount; i++) {
+            var lbl = document.createElement("label");
+            var input = document.createElement("input");
+            var img = document.createElement('img');
+
+            input.type = 'checkbox';
+            input.value = false;
+            input.setAttribute('onclick', `$(this).val(this.checked ? true : false); SendData(${i});`);
+            img.setAttribute('src', 'images/h09r00.jpg')
+            img.setAttribute('style', 'width: 10rem;')
+            //lbl.appendChild(img)
+            lbl.appendChild(input);
+            lbl.append(` Relay ${i} `);
+            relaysGroup.appendChild(lbl);
+            relaysGroup.appendChild(document.createElement('br'));
+        }
+        var lbl = document.createElement("label");
+        var input = document.createElement("input");
+
+        input.type = 'checkbox';
+        input.value = false;
+        input.setAttribute('onclick', `$(this).val(this.checked ? true : false); ToggleAll(${relayCount});`);
+
+        lbl.appendChild(input);
+        lbl.append(` All ${relayCount}`);
+        relaysGroup.appendChild(lbl);
+    }
+
+    function ToggleAll() {
+        var relayCount = document.getElementById('relayCount').value;
+
+         $.ajax({
+            url: '@Url.Action("ToggleAll")',
+            type: "POST",
+            dataType: "json",
+            data: {
+                'RelaysCount': relayCount,
+            },
+        });
+
+    }
+
+</script>

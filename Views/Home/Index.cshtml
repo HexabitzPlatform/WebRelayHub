@@ -27,7 +27,7 @@
                             <option>2</option>
                             <option selected="selected">3</option>
                             <option>4</option>
-                            <option >5</option>
+                            <option>5</option>
                             <option>6</option>
                             <option>7</option>
                             <option>8</option>
@@ -97,7 +97,7 @@
 
 <div class="row">
     @*Left column*@
-    <div class="col-md-6">
+    <div class="col-md-12">
 
         <!-- Relays -->
         <div class="box box-info">
@@ -119,23 +119,46 @@
                 </div>
 
 
-                <div id ="relaysGroup" class="form-group">
-                    <label>
-                        <input id="relay2" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(2);">
-                        Relay 2
-                    </label>
-                    <label>
-                        <input id="relay3" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(3);">
-                        Relay 3
-                    </label>
-                    <label>
-                        <input id="relay4" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(4);">
-                        Relay 4
-                    </label>
-                    <label>
-                        <input id="relay5" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(5);">
-                        Relay 5
-                    </label>
+                <div id="relaysGroup" class="form-group">
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="box box-success">
+                                <label>Room: </label>
+                                <select id="2" name="roomSelect" class="form-control select2" style="width: 100%;" onchange="RoomChange(this.id, this.value);">
+                                    <option selected="selected">Kitchen</option>
+                                    <option>Living Room</option>
+                                    <option>Bed Room</option>
+                                </select>
+                                <img id="image2" class="center" style="width: 50%" src="~/images/h09r00.jpg" />
+                                <br />
+                                <label class="center">
+                                    <input id="relay2" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(2);">
+                                    Relay 2
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="box box-success">
+                                <label>Room: </label>
+                                <select id="3" name="roomSelect" class="form-control select2" style="width: 100%;" onchange="RoomChange(this.id, this.value);">
+                                    <option selected="selected">Kitchen</option>
+                                    <option>Living Room</option>
+                                    <option>Bed Room</option>
+                                </select>
+                                <img id="image3" class="center" style="width: 50%" src="~/images/h09r00.jpg" />
+                                <br />
+                                <label class="center">
+                                    <input id="relay3" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(2);">
+                                    Relay 2
+                                </label>
+                            </div>
+                        </div>
+                      
+
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -194,11 +217,11 @@
 
     function SendData(DestinationID) {
         //debugger;
-        relayValues = [relay2.value,
-        relay3.value,
-        relay4.value,
-        relay5.value,
-        ];
+        //relayValues = [relay2.value,
+        //relay3.value,
+        //relay4.value,
+        //relay5.value,
+        //];
 
         $.ajax({
             url: '@Url.Action("SendData")',
@@ -207,7 +230,7 @@
             data: {
                 'SourceID': SourceID.value,
                 'DestinationID': DestinationID,
-                'relayValues': relayValues,
+                //'relayValues': relayValues,
             },
             success: function (response) {
                 ConnectionStatus.innerHTML = "Connected";
@@ -237,14 +260,15 @@
             lbl.appendChild(input);
             lbl.append(` Relay ${i} `);
             relaysGroup.appendChild(lbl);
-            relaysGroup.appendChild(document.createElement('br'));
+            //relaysGroup.appendChild(document.createElement('br'));
         }
         var lbl = document.createElement("label");
         var input = document.createElement("input");
 
         input.type = 'checkbox';
+        input.id = 'all';
         input.value = false;
-        input.setAttribute('onclick', `$(this).val(this.checked ? true : false); ToggleAll(${relayCount});`);
+        input.setAttribute('onclick', `$(this).val(this.checked ? true : false); All();`);
 
         lbl.appendChild(input);
         lbl.append(` All ${relayCount}`);
@@ -252,17 +276,56 @@
     }
 
     function ToggleAll() {
-        var relayCount = document.getElementById('relayCount').value;
+        var RelaysCount = document.getElementById('relayCount').value;
 
-         $.ajax({
+        $.ajax({
             url: '@Url.Action("ToggleAll")',
             type: "POST",
             dataType: "json",
             data: {
-                'RelaysCount': relayCount,
+                'RelaysCount': RelaysCount,
             },
         });
+    }
 
+    function All() {
+        debugger;
+        var value = document.getElementById('all').value;
+
+        if (value == "true")
+            AllOn();
+        else
+            AllOff();
+        
+    }
+
+     function AllOn() {
+        $.ajax({
+            url: '@Url.Action("AllOn")',
+            type: "POST",
+            dataType: "json",
+        });
+    }
+
+     function AllOff() {
+        $.ajax({
+            url: '@Url.Action("AllOff")',
+            type: "POST",
+            dataType: "json",
+        });
+    }
+
+    function RoomChange(ID, Value) {
+        console.log(ID);
+        console.log(Value);
+        var image = document.getElementById(`image${ID}`);
+        debugger;
+        switch (Value) {
+            case 'Kitchen': image.setAttribute('src', '/images/kitchen.png'); break;
+            case 'Living Room': image.setAttribute('src', '/images/living_room.png'); break;
+            case 'Bed Room': image.setAttribute('src', '/images/bed_room.png'); break;
+        }
+        
     }
 
 </script>

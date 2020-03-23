@@ -26,6 +26,9 @@ namespace WebScale.Controllers
         private byte modulePort = 0x03;
         private byte module = 0x01;
 
+
+        private static byte BroadcastCounter = 1;
+
         public IActionResult Index()
         {
             return View();
@@ -61,7 +64,7 @@ namespace WebScale.Controllers
         }
 
         [HttpPost]
-        public void SendData (string SourceID, string DestinationID, string [] relayValues)
+        public void SendData (string SourceID, string DestinationID)
         {
             Code = (int)HexaInterface.Message_Codes.CODE_H0FR6_TOGGLE;
             HexaInter.Opt2_16_BIT_Code = "1"; 
@@ -75,17 +78,34 @@ namespace WebScale.Controllers
         {
             Code = (int)HexaInterface.Message_Codes.CODE_H0FR6_TOGGLE;
             HexaInter.Opt2_16_BIT_Code = "1";
-            byte[] Payload = new byte[0];
+            byte[] Payload = { BroadcastCounter };
             HexaInter.SendMessage(255, 1, Code, Payload);
-
-
-            //for (int i = 2; i <= int.Parse(RelaysCount); i++)
-            //{
-            //    Thread.Sleep(200);
-            //    HexaInter.SendMessage((byte)i, 1, Code, Payload);
-            //}
-
+            BroadcastCounter++;
         }
 
+        [HttpPost]
+        public void AllOn()
+        {
+            Code = (int)HexaInterface.Message_Codes.CODE_H0FR6_ON;
+            HexaInter.Opt2_16_BIT_Code = "1";
+            byte[] periodBytes = BitConverter.GetBytes(int.Parse("1000"));
+            byte[] Payload = { periodBytes[3],
+                            periodBytes[2],
+                            periodBytes[1],
+                            periodBytes[0],
+                            BroadcastCounter };
+            HexaInter.SendMessage(255, 1, Code, Payload);
+            BroadcastCounter++;
+        }
+
+        [HttpPost]
+        public void AllOff()
+        {
+            Code = (int)HexaInterface.Message_Codes.CODE_H0FR6_OFF;
+            HexaInter.Opt2_16_BIT_Code = "1";
+            byte[] Payload = { BroadcastCounter };
+            HexaInter.SendMessage(255, 1, Code, Payload);
+            BroadcastCounter++;
+        }
     }
 }

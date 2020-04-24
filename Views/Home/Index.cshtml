@@ -104,11 +104,16 @@
             <div class="box-header">
                 <h3 class="box-title">Relays Control</h3>
             </div>
+            <div class="form-group">
+                <button onclick="Save();">Save</button>
+                <button onclick="Load();">Load</button>
+                <span id="time"></span>
+            </div>
             <div class="box-body">
 
                 <div class="form-group">
                     <label>Relays count</label>
-                    <select id="relayCount" name="relayCount" class="form-control select2" style="width: 100%;" onchange="CountChange()">
+                    <select id="relayCount" name="relayCount" class="form-control select2" style="width: 100%;" onchange="CountChange(false)">
                         <option selected="selected">1</option>
                         <option>2</option>
                         <option>3</option>
@@ -119,46 +124,23 @@
                 </div>
 
 
-                <div id="relaysGroup" class="form-group">
-                    <div class="row">
-
-                        <div class="col-md-4">
-                            <div class="box box-success">
-                                <label>Room: </label>
-                                <select id="2" name="roomSelect" class="form-control select2" style="width: 100%;" onchange="RoomChange(this.id, this.value);">
-                                    <option selected="selected">Kitchen</option>
-                                    <option>Living Room</option>
-                                    <option>Bed Room</option>
-                                </select>
-                                <img id="image2" class="center" style="width: 50%" src="~/images/h09r00.jpg" />
-                                <br />
-                                <label class="center">
-                                    <input id="relay2" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(2);">
-                                    Relay 2
-                                </label>
-                            </div>
+                <div id="relaysGroup" class="form-group row">
+                    <div class="col-md-4">
+                        <div class="box box-success">
+                            <label>Room: </label>
+                            <select id="3" class="form-control select2" style="width: 100%;" onchange="RoomChange(this.id, this.value);">
+                                <option selected="selected">Kitchen</option>
+                                <option>Living Room</option>
+                                <option>Bed Room</option>
+                            </select>
+                            <img id="image3" class="center" style="width: 50%" src="~/images/h09r00.jpg" />
+                            <br />
+                            <label class="center">
+                                <input id="relay3" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(2);">
+                                Relay 2
+                            </label>
                         </div>
-
-                        <div class="col-md-4">
-                            <div class="box box-success">
-                                <label>Room: </label>
-                                <select id="3" name="roomSelect" class="form-control select2" style="width: 100%;" onchange="RoomChange(this.id, this.value);">
-                                    <option selected="selected">Kitchen</option>
-                                    <option>Living Room</option>
-                                    <option>Bed Room</option>
-                                </select>
-                                <img id="image3" class="center" style="width: 50%" src="~/images/h09r00.jpg" />
-                                <br />
-                                <label class="center">
-                                    <input id="relay3" type="checkbox" value="false" onclick="$(this).val(this.checked ? true : false); SendData(2);">
-                                    Relay 2
-                                </label>
-                            </div>
-                        </div>
-                      
-
                     </div>
-
                 </div>
             </div>
         </div>
@@ -177,15 +159,10 @@
     var ConnectionStatus = document.getElementById("connectionStatus");
 
 
-    // Relays controls
-    var relay2 = document.getElementById('relay2');
-    var relay3 = document.getElementById('relay3');
-    var relay4 = document.getElementById('relay4');
-    var relay5 = document.getElementById('relay5');
-
-
-
     // Variables
+
+    var relaysCount;
+    var roomsConfiguration = [];
 
     function Connect() {
         $.ajax({
@@ -241,12 +218,66 @@
 
     }
 
-    function CountChange() {
-        var relayCount = document.getElementById('relayCount').value;
+    function CountChange(load) {
+        relaysCount = document.getElementById('relayCount').value;
         var relaysGroup = document.getElementById('relaysGroup');
         relaysGroup.innerHTML = "";
 
-        for (var i = 2; i <= relayCount; i++) {
+        for (var i = 2; i <= relaysCount; i++) {
+            var div = document.createElement("div");
+            div.setAttribute("class", "col-md-4");
+
+            var div_box = document.createElement("div");
+            div_box.setAttribute("class", "box box-success");
+
+            div.appendChild(div_box);
+
+            var roomLBL = document.createElement("label");
+            roomLBL.innerHTML = "Room: ";
+            div_box.appendChild(roomLBL);
+
+            var roomSelect = document.createElement("select");
+            roomSelect.id = i;
+            roomSelect.setAttribute("class", "form-control select2");
+            roomSelect.setAttribute("style", "width: 100%;");
+            roomSelect.setAttribute("onchange", "RoomChange(this.id, this.value);");
+            debugger;
+            var selectedRoom = '';
+            if (load) {
+                selectedRoom = roomsConfiguration[i - 2];
+                roomSelect.setAttribute('value', selectedRoom)
+            }
+            var option = document.createElement("option");
+            option.innerHTML = "Kitchen";
+            if (selectedRoom == 'Kitchen') { option.setAttribute('selected', 'selected'); }
+            roomSelect.appendChild(option)
+
+            var option = document.createElement("option");
+            option.innerHTML = "Living Room";
+            if (selectedRoom == 'Living Room') { option.setAttribute('selected', 'selected'); }
+            roomSelect.appendChild(option)
+
+            var option = document.createElement("option");
+            option.innerHTML = "Bed Room";
+            if (selectedRoom == 'Bed Room') { option.setAttribute('selected', 'selected'); }
+            roomSelect.appendChild(option)
+
+            div_box.appendChild(roomSelect);
+
+            var img = document.createElement('img');
+            img.id = `image${i}`;
+            img.setAttribute("class", "center");
+            img.setAttribute("style", "width: 50%;");
+            switch (selectedRoom) {
+                case 'Kitchen': img.setAttribute("src", "/images/kitchen.png"); break;
+                case 'Living Room': img.setAttribute("src", "/images/living_room.png"); break;
+                case 'Bed Room': img.setAttribute("src", "/images/bed_room.png"); break;
+                default: img.setAttribute("src", "/images/kitchen.png"); break;
+            }
+
+            div_box.appendChild(img)
+            div_box.appendChild(document.createElement("br"))
+
             var lbl = document.createElement("label");
             var input = document.createElement("input");
             var img = document.createElement('img');
@@ -254,13 +285,14 @@
             input.type = 'checkbox';
             input.value = false;
             input.setAttribute('onclick', `$(this).val(this.checked ? true : false); SendData(${i});`);
-            img.setAttribute('src', 'images/h09r00.jpg')
-            img.setAttribute('style', 'width: 10rem;')
-            //lbl.appendChild(img)
+
+            lbl.setAttribute("class", "center");
             lbl.appendChild(input);
             lbl.append(` Relay ${i} `);
-            relaysGroup.appendChild(lbl);
-            //relaysGroup.appendChild(document.createElement('br'));
+
+            div_box.appendChild(lbl)
+
+            relaysGroup.appendChild(div);
         }
         var lbl = document.createElement("label");
         var input = document.createElement("input");
@@ -271,7 +303,7 @@
         input.setAttribute('onclick', `$(this).val(this.checked ? true : false); All();`);
 
         lbl.appendChild(input);
-        lbl.append(` All ${relayCount}`);
+        lbl.append(` All ${relaysCount}`);
         relaysGroup.appendChild(lbl);
     }
 
@@ -319,13 +351,52 @@
         console.log(ID);
         console.log(Value);
         var image = document.getElementById(`image${ID}`);
-        debugger;
         switch (Value) {
             case 'Kitchen': image.setAttribute('src', '/images/kitchen.png'); break;
             case 'Living Room': image.setAttribute('src', '/images/living_room.png'); break;
             case 'Bed Room': image.setAttribute('src', '/images/bed_room.png'); break;
         }
-        
+
+    }
+
+    function Save() {
+        //debugger;
+        if (localStorage) {
+            localStorage.setItem("relaysCount", relaysCount.toString());
+            roomsConfiguration = [];
+            for (var i = 2; i <= relaysCount; i++) {
+                var roomSelectValue = document.getElementById(i).value;
+                roomsConfiguration.push(roomSelectValue);
+            }
+            localStorage.setItem("roomsConfiguration", roomsConfiguration);
+        }
+    }
+
+
+
+    function Load() {
+        relaysCount = localStorage.getItem("relaysCount");
+        roomsConfiguration = localStorage.getItem("roomsConfiguration");
+        roomsConfiguration = roomsConfiguration.split(",");
+        document.getElementById('relayCount').value = relaysCount;
+
+        CountChange(true);
+        document.getElementById('time').innerHTML = relaysCount;
+    }
+
+    function getSessionCount() {
+        var count = 0;
+        if (sessionStorage) {
+            var count = sessionStorage.getItem("ss_count");
+            count = !count ? 0 : count * 1;
+        }
+        $("#txtSession").val(count);
+        return count;
+    }
+
+    function setSessionCount(count) {
+        if (sessionStorage)
+            sessionStorage.setItem("ss_count", count.toString());
     }
 
 </script>
